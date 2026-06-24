@@ -1,0 +1,183 @@
+/* Loading Overlay Styles */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 15, 26, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 400px;
+  padding: 2rem;
+  text-align: center;
+}
+
+/* Large Spinner */
+.loading-spinner-large {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.spinner-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 3px solid transparent;
+  animation: rotateRing 2s linear infinite;
+}
+
+.spinner-ring:nth-child(1) {
+  width: 120px;
+  height: 120px;
+  border-top-color: var(--primary-color);
+  animation-duration: 2s;
+}
+
+.spinner-ring:nth-child(2) {
+  width: 90px;
+  height: 90px;
+  border-right-color: var(--secondary-color);
+  animation-duration: 1.5s;
+  animation-direction: reverse;
+}
+
+.spinner-ring:nth-child(3) {
+  width: 60px;
+  height: 60px;
+  border-bottom-color: var(--accent-color);
+  animation-duration: 1s;
+}
+
+@keyframes rotateRing {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.spinner-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.loading-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.loading-message {
+  font-size: 1rem;
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+/* Progress Bar */
+.loading-progress {
+  width: 100%;
+  max-width: 300px;
+}
+
+.progress-bar {
+  height: 4px;
+  background: var(--bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 30%;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+  border-radius: 2px;
+  animation: progressAnimation 2s ease-in-out infinite;
+}
+
+@keyframes progressAnimation {
+  0% {
+    width: 0%;
+    margin-left: 0%;
+  }
+  50% {
+    width: 60%;
+    margin-left: 20%;
+  }
+  100% {
+    width: 0%;
+    margin-left: 100%;
+  }
+}
+
+.loading-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 480px) {
+  .loading-content {
+    padding: 1.5rem;
+  }
+  
+  .loading-spinner-large {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .spinner-ring:nth-child(1) {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .spinner-ring:nth-child(2) {
+    width: 75px;
+    height: 75px;
+  }
+  
+  .spinner-ring:nth-child(3) {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .loading-title {
+    font-size: 1.25rem;
+  }
+}
