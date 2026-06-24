@@ -1,4 +1,4 @@
-# 🎬 AI Presenter Generator
+# 🎬 AI Presenter
 
 A production-ready web application that generates AI-powered presentation videos with lip-sync technology. Enter any topic, select an avatar, and get a professional video presentation generated automatically.
 
