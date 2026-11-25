@@ -1,383 +1,108 @@
-# 🎬 AI Presenter
-
-A production-ready web application that generates AI-powered presentation videos with lip-sync technology. Enter any topic, select an avatar, and get a professional video presentation generated automatically.
-
-## ✨ Features
-
-- **AI Script Generation**: Uses Google Gemini AI to create engaging 2-minute presentation scripts
-- **Voice Synthesis**: Generates natural-sounding voiceovers using ElevenLabs API
-- **Lip-Sync Videos**: Creates realistic talking head videos using SadTalker
-- **Custom Avatars**: Upload your own image or choose from default male/female avatars
-- **Dark Theme UI**: Modern, professional, responsive design
-
-## 📁 Project Structure
-
-```
-Aipresenter/
-├── frontend/                # React.js (Vite) frontend
-│   ├── public/
-│   ├── src/
-│   │   ├── components/      # React components
-│   │   ├── styles/          # CSS styles
-│   │   ├── App.jsx
-│   │   ├── App.css
-│   │   ├── main.jsx
-│   │   └── index.css
-│   ├── index.html
-│   ├── package.json
-│   └── vite.config.js
-│
-├── backend/                 # Node.js Express backend
-│   ├── routes/
-│   │   └── generate.js      # API routes
-│   ├── services/
-│   │   ├── geminiService.js     # Google Gemini integration
-│   │   ├── elevenLabsService.js # ElevenLabs integration
-│   │   └── sadTalkerService.js  # SadTalker integration
-│   ├── utils/
-│   │   └── fileUtils.js
-│   ├── server.js
-│   ├── package.json
-│   └── .env.example
-│
-├── avatars/                 # Default avatar images
-│   ├── male.jpg
-│   └── female.jpg
-│
-├── uploads/                 # User-uploaded images
-│
-├── results/                 # Generated videos and audio
-│
-└── README.md
-```
-
-## 🛠️ Prerequisites
-
-### Required Software
-
-1. **Node.js** (v18 or higher)
-   - Download: https://nodejs.org/
-
-2. **Python** (v3.8 - 3.10 recommended)
-   - Download: https://www.python.org/
-
-3. **Git**
-   - Download: https://git-scm.com/
-
-4. **CUDA Toolkit** (for GPU acceleration with SadTalker)
-   - Download: https://developer.nvidia.com/cuda-downloads
+# AI Presenter
+
+AI Presenter is a web application prototype that generates a short talking-avatar presentation from a topic. The current implementation combines a React/Vite frontend with a Node.js/Express backend and external AI services.
+
+## What it does
+
+1. Accepts a topic and an avatar choice or uploaded image.
+2. Requests a short spoken script from Google Gemini (with an optional OpenRouter fallback).
+3. Generates speech with ElevenLabs, or uses Windows local text-to-speech when the ElevenLabs key is not configured.
+4. Runs SadTalker to render a lip-synced video.
+5. Optionally generates subtitle text with Whisper when the relevant script and dependencies are available.
+
+This repository does not include the SadTalker model checkout or pretrained model files. Install SadTalker separately and configure its location.
+
+## Technology
+
+- **Frontend:** JavaScript, React 18, Vite, CSS
+- **Backend:** JavaScript, Node.js, Express
+- **AI script generation:** Google Gemini API; optional OpenRouter fallback
+- **Voice generation:** ElevenLabs API; Windows Speech fallback
+- **Avatar video generation:** SadTalker (Python/PyTorch)
+- **Optional subtitles:** Whisper
+
+## Repository layout
+
+The application files are under `Aipresenter/Aipresenter/`:
+
+- `backend/server.js`: Express server and static file hosting
+- `backend/routes/generate.js`: video-generation API route
+- `backend/services/`: Gemini, ElevenLabs and SadTalker integrations
+- `frontend/src/`: React app and UI components
+- `HOW_TO_RUN.md` and `USER_MANUAL.md`: setup and usage guides
+
+## Requirements
+
+- Node.js 18 or later
+- Python version compatible with the separately installed SadTalker checkout
+- Git
+- A working SadTalker installation with its Python environment and model checkpoints
+- Google Gemini API key
+- ElevenLabs API key (optional; without it, the current local voice fallback requires Windows)
+
+GPU acceleration is optional but can substantially improve video-generation time. Install a PyTorch build compatible with the local GPU driver and SadTalker requirements.
+
+## Configure and run (Windows-oriented setup)
+
+1. Clone this repository.
+2. Open the application folder:
+   ```powershell
+   cd Aipresenter\Aipresenter
+   ```
+3. Install SadTalker separately, for example:
+   ```powershell
+   cd C:\
+   git clone https://github.com/OpenTalker/SadTalker.git
+   ```
+   Confirm that the cloned folder contains `inference.py` and install its documented dependencies and checkpoints.
+4. In `backend`, copy `.env.example` to `.env` and set your keys and local SadTalker path:
+   ```env
+   GEMINI_API_KEY=your_gemini_key
+   OPENROUTER_API_KEY=
+   ELEVENLABS_API_KEY=your_elevenlabs_key
+   ELEVENLABS_MALE_VOICE_ID=pNInz6obpgDQGcFmaJgB
+   ELEVENLABS_FEMALE_VOICE_ID=EXAVITQu4vr4xnSDxMaL
+   SADTALKER_PATH=C:/SadTalker
+   PORT=5000
+   NODE_ENV=development
+   ```
+   Never commit your real `.env` file or API keys.
+5. Install and start the backend:
+   ```powershell
+   cd backend
+   npm install
+   npm run dev
+   ```
+6. In another terminal, install and start the frontend:
+   ```powershell
+   cd Aipresenter\Aipresenter\frontend
+   npm install
+   npm run dev
+   ```
+7. Open http://localhost:5173.
+
+## API
+
+### `POST /api/generate-video`
+
+Content type: `multipart/form-data`
+
+| Field | Required | Description |
+|---|---|---|
+| `topic` | Yes | Topic for script generation |
+| `avatar` | No | `male` or `female`; defaults to male behavior |
+| `image` | No | Uploaded avatar image, maximum 10 MB |
+
+A successful response contains `data.videoUrl`, `data.subtitleUrl` (which can be null), and `data.scriptPreview`. The application also exposes `GET /health`.
+
+## Notes and known limitations
+
+- This is a learning/portfolio project, not a production-ready service.
+- The current generation flow uses shared SadTalker input filenames, so simultaneous requests are not safe.
+- Before public deployment, add authentication, rate limiting, CSRF/request controls as appropriate, per-request isolated work directories, stronger upload content validation, cleanup policies, and production-safe error handling.
+- Do not expose provider API keys in frontend code or commit them to Git.
+- Local Windows text-to-speech is a fallback, not a cross-platform service.
 
-### API Keys Required
+## License
 
-1. **Google Gemini API Key**
-   - Get it from: https://makersuite.google.com/app/apikey
-
-2. **ElevenLabs API Key**
-   - Get it from: https://elevenlabs.io/ (sign up and go to Profile Settings)
-
-## 📦 Installation
-
-### Step 1: Clone or Navigate to the Project
-
-```bash
-cd Aipresenter
-```
-
-### Step 2: Install SadTalker
-
-```bash
-# Clone SadTalker repository (outside the project folder)
-cd C:/
-git clone https://github.com/OpenTalker/SadTalker.git
-cd SadTalker
-
-# Create a virtual environment
-python -m venv venv
-venv\Scripts\activate
-
-# Install dependencies
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-pip install -r requirements.txt
-
-# Download pretrained models (will take some time)
-# Models will be downloaded automatically on first run, or download manually:
-# - Download checkpoints from: https://github.com/OpenTalker/SadTalker#-2-download-models
-# - Place in SadTalker/checkpoints/ folder
-```
-
-### Step 3: Install Backend Dependencies
-
-```bash
-cd Aipresenter/backend
-
-# Install npm packages
-npm install
-```
-
-### Step 4: Configure Environment Variables
-
-```bash
-# Copy the example env file
-copy .env.example .env
-
-# Edit .env with your API keys
-notepad .env
-```
-
-Configure your `.env` file:
-
-```env
-# Google Gemini API Key
-GEMINI_API_KEY=your_actual_gemini_api_key
-
-# ElevenLabs API Key
-ELEVENLABS_API_KEY=your_actual_elevenlabs_api_key
-
-# ElevenLabs Voice IDs (default voices, can be changed)
-ELEVENLABS_MALE_VOICE_ID=pNInz6obpgDQGcFmaJgB
-ELEVENLABS_FEMALE_VOICE_ID=21m00Tcm4TlvDq8ikWAM
-
-# Path to SadTalker installation
-SADTALKER_PATH=C:/SadTalker
-
-# Server Configuration
-PORT=5000
-NODE_ENV=development
-```
-
-### Step 5: Install Frontend Dependencies
-
-```bash
-cd ../frontend
-npm install
-```
-
-### Step 6: Add Avatar Images
-
-Add default avatar images to the `avatars` folder:
-
-- `avatars/male.jpg` - Default male avatar (512x512 recommended)
-- `avatars/female.jpg` - Default female avatar (512x512 recommended)
-
-You can use any high-quality face images. For best results:
-
-- Use clear, front-facing photos
-- Good lighting
-- Neutral expression
-- Square aspect ratio (512x512 or larger)
-
-## 🚀 Running the Application
-
-### Development Mode
-
-**Terminal 1 - Start Backend:**
-
-```bash
-cd backend
-npm run dev
-```
-
-Backend will run on: http://localhost:5000
-
-**Terminal 2 - Start Frontend:**
-
-```bash
-cd frontend
-npm run dev
-```
-
-Frontend will run on: http://localhost:5173
-
-### Production Mode
-
-**Backend:**
-
-```bash
-cd backend
-npm start
-```
-
-**Frontend:**
-
-```bash
-cd frontend
-npm run build
-npm run preview
-```
-
-## 📝 API Documentation
-
-### POST /api/generate
-
-Generate an AI presentation video.
-
-**Request:**
-
-- Content-Type: `multipart/form-data`
-
-| Field      | Type   | Required | Description                                    |
-| ---------- | ------ | -------- | ---------------------------------------------- |
-| topic      | string | Yes      | Topic for the presentation                     |
-| avatarType | string | Yes      | "male" or "female"                             |
-| image      | file   | No       | Custom avatar image (JPG, PNG, WebP, max 10MB) |
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "message": "Video generated successfully",
-  "data": {
-    "sessionId": "uuid",
-    "videoUrl": "/results/uuid/output.mp4",
-    "script": "Generated script preview..."
-  }
-}
-```
-
-**Error Response:**
-
-```json
-{
-  "success": false,
-  "message": "Error description",
-  "sessionId": "uuid"
-}
-```
-
-### GET /health
-
-Health check endpoint.
-
-**Response:**
-
-```json
-{
-  "status": "ok",
-  "message": "AI Presenter Generator API is running"
-}
-```
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-**1. SadTalker not found**
-
-- Ensure `SADTALKER_PATH` in `.env` points to the correct directory
-- Verify `inference.py` exists in the SadTalker folder
-
-**2. CUDA errors**
-
-- Install the correct CUDA toolkit version for your GPU
-- Use `torch` with CPU if no GPU: remove `--index-url` flag when installing
-
-**3. ElevenLabs quota exceeded**
-
-- Free tier has limited characters/month
-- Upgrade your ElevenLabs plan or wait for quota reset
-
-**4. Gemini API errors**
-
-- Verify your API key is correct
-- Check if you've exceeded free tier limits
-
-**5. Video not generating**
-
-- Check backend console for detailed error messages
-- Ensure all Python dependencies are installed in SadTalker environment
-
-### Logs
-
-Check the backend console for detailed logs:
-
-```
-📝 New generation request [Session: xxx]
-🤖 Step 1: Generating script with Gemini AI...
-✅ Script generated (300 characters)
-🎙️ Step 2: Generating voice with ElevenLabs...
-✅ Voice generated: /results/xxx/voice.mp3
-🎬 Step 3: Generating lip-sync video with SadTalker...
-✅ Video generated: /results/xxx/output.mp4
-🎉 Generation complete! [Session: xxx]
-```
-
-## 📚 Required Packages
-
-### Backend (npm)
-
-```json
-{
-  "@google/generative-ai": "^0.21.0",
-  "cors": "^2.8.5",
-  "dotenv": "^16.4.5",
-  "express": "^4.21.0",
-  "multer": "^1.4.5-lts.1",
-  "uuid": "^10.0.0",
-  "nodemon": "^3.1.4"
-}
-```
-
-### Frontend (npm)
-
-```json
-{
-  "react": "^18.3.1",
-  "react-dom": "^18.3.1",
-  "@vitejs/plugin-react": "^4.3.1",
-  "vite": "^5.4.2"
-}
-```
-
-### SadTalker (pip)
-
-```txt
-torch>=1.12.1
-torchvision>=0.13.1
-torchaudio>=0.12.1
-numpy
-scipy
-face_alignment
-dlib
-librosa
-pydub
-imageio
-imageio-ffmpeg
-yacs
-pyyaml
-safetensors
-gfpgan
-basicsr
-facexlib
-realesrgan
-piqa
-tqdm
-```
-
-## 🔐 Security Notes
-
-- Never commit `.env` files with real API keys
-- Implement rate limiting for production
-- Add authentication for public deployments
-- Sanitize user inputs
-- Set appropriate file size limits
-
-## 📄 License
-
-All rights reserved. This repository and its code are for personal portfolio review and viewing purposes only. No permission is granted to copy, modify, distribute, or use this code for any other purpose.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## ❓ Support
-
-For issues and questions:
-
-- Check the troubleshooting section
-- Review console logs for errors
-- Ensure all dependencies are installed correctly
+All rights reserved. This repository and its code are for personal portfolio review and viewing purposes only.

@@ -9,7 +9,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ✅ Unified SadTalker path
-const SADTALKER_PATH = path.resolve(__dirname, '../AI/SadTalker-main/SadTalker-main');
+const SADTALKER_PATH = path.resolve(
+  process.env.SADTALKER_PATH || path.resolve(__dirname, '../AI/SadTalker-main/SadTalker-main')
+);
 
 const SADTALKER_AUDIO_PATH = path.join(SADTALKER_PATH, 'input.wav');
 
