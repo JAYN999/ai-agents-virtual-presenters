@@ -22,7 +22,9 @@ const __dirname = path.dirname(__filename);
 const router = express.Router();
 
 // ✅ Unified SadTalker Path
-const SADTALKER_PATH = path.resolve(__dirname, "../AI/SadTalker-main/SadTalker-main");
+const SADTALKER_PATH = path.resolve(
+  process.env.SADTALKER_PATH || path.resolve(__dirname, "../AI/SadTalker-main/SadTalker-main")
+);
 const SADTALKER_IMAGE_PATH = path.join(SADTALKER_PATH, "input.jpg");
 
 // ===============================
