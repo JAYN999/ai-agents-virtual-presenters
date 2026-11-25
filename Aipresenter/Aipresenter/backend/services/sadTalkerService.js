@@ -6,7 +6,9 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const SADTALKER_PATH = path.resolve(__dirname, "../AI/SadTalker-main/SadTalker-main");
+const SADTALKER_PATH = path.resolve(
+  process.env.SADTALKER_PATH || path.resolve(__dirname, "../AI/SadTalker-main/SadTalker-main")
+);
 
 export function checkSadTalkerInstallation() {
   const pythonPath = path.join(SADTALKER_PATH, "venv", "Scripts", "python.exe");
