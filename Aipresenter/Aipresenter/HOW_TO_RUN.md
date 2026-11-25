@@ -1,187 +1,83 @@
-# 🚀 How to Run AI Presenter — Simple Step-by-Step Guide
+# How to Run AI Presenter (Windows)
 
----
+This guide matches the current repository layout and code.
 
-## 📋 What You Need First (Prerequisites)
+## 1. Prerequisites
 
-| # | Software | Download Link | Why? |
-|---|----------|--------------|------|
-| 1 | **Node.js** (v18+) | https://nodejs.org/ | Runs the backend & frontend |
-| 2 | **Python** (3.8 – 3.10) | https://www.python.org/ | Runs SadTalker (video AI) |
-| 3 | **Git** | https://git-scm.com/ | For cloning repos |
-| 4 | **NVIDIA GPU + CUDA Toolkit** *(optional)* | https://developer.nvidia.com/cuda-downloads | Speeds up video generation |
+- Node.js 18 or later
+- Python and Git
+- A separately installed SadTalker checkout, including `inference.py`, dependencies and model checkpoints
+- Gemini API key
+- Optional ElevenLabs API key
 
-### 🔑 API Keys You Need
+## 2. Install SadTalker separately
 
-| API | Where to Get It | What It Does |
-|-----|----------------|--------------|
-| **Google Gemini** | https://makersuite.google.com/app/apikey | Generates the script |
-| **OpenRouter** *(optional fallback)* | https://openrouter.ai | Backup if Gemini quota runs out |
-| **ElevenLabs** | https://elevenlabs.io → Profile Settings | Generates the voice |
+The SadTalker source and model files are not stored in this Git repository. For example:
 
----
+```powershell
+cd C:\
+git clone https://github.com/OpenTalker/SadTalker.git
+```
 
-## ⚡ Quick Start (5 Steps)
+Follow SadTalker's own instructions to install the required Python packages and model checkpoints. Confirm `C:\SadTalker\inference.py` exists.
 
-### Step 1️⃣ — Set Up Your API Keys
+## 3. Configure the backend
 
-1. Open the file: `backend/.env`
-2. Replace the placeholder keys with your own:
+Open `Aipresenter\Aipresenter\backend` and copy the example file:
+
+```powershell
+Copy-Item .env.example .env
+notepad .env
+```
+
+Set your own values:
 
 ```env
-GEMINI_API_KEY=paste_your_gemini_key_here
-OPENROUTER_API_KEY=paste_your_openrouter_key_here
-ELEVENLABS_API_KEY=paste_your_elevenlabs_key_here
+GEMINI_API_KEY=your_gemini_key
+OPENROUTER_API_KEY=
+ELEVENLABS_API_KEY=your_elevenlabs_key
+SADTALKER_PATH=C:/SadTalker
+PORT=5000
+NODE_ENV=development
 ```
 
-> [!TIP]
-> If you don't have an ElevenLabs key, the app will automatically fall back to Windows built-in text-to-speech.
+Keep the real `.env` private and do not upload it to GitHub.
 
----
-
-### Step 2️⃣ — Set Up SadTalker (Video AI)
-
-SadTalker is already included in the project at `backend/AI/SadTalker-main/SadTalker-main/`.
-
-You need to create a Python virtual environment and install dependencies:
+## 4. Install and start the backend
 
 ```powershell
-# Navigate to the SadTalker folder
-cd "path\to\Aipresenter\backend\AI\SadTalker-main\SadTalker-main"
-
-# Create virtual environment
-python -m venv venv
-
-# Activate the virtual environment
-.\venv\Scripts\activate
-
-# Install PyTorch with GPU support (pick ONE):
-
-# 👉 If you have an NVIDIA GPU:
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
-
-# 👉 If you DON'T have an NVIDIA GPU (CPU only):
-pip install torch torchvision torchaudio
-
-# Install remaining dependencies
-pip install -r requirements.txt
-
-# Deactivate when done
-deactivate
-```
-
-> [!IMPORTANT]
-> **First run will be slow** — SadTalker automatically downloads model checkpoints (~1-2 GB) on the first run. This only happens once.
-
----
-
-### Step 3️⃣ — Install Backend Dependencies
-
-Open a **new terminal** and run:
-
-```powershell
-cd "path\to\Aipresenter\backend"
+cd Aipresenter\Aipresenter\backend
 npm install
-```
-
----
-
-### Step 4️⃣ — Install Frontend Dependencies
-
-Open **another terminal** and run:
-
-```powershell
-cd "path\to\Aipresenter\frontend"
-npm install
-```
-
----
-
-### Step 5️⃣ — Start the App! 🎉
-
-You need **two terminals running at the same time**:
-
-#### Terminal 1 — Start Backend Server:
-
-```powershell
-cd "path\to\Aipresenter\backend"
 npm run dev
 ```
 
-You should see: `Server running on http://localhost:5000`
+The API should be available at http://localhost:5000. Check http://localhost:5000/health.
 
-#### Terminal 2 — Start Frontend:
+## 5. Install and start the frontend
+
+Open a second terminal:
 
 ```powershell
-cd "path\to\Aipresenter\frontend"
+cd Aipresenter\Aipresenter\frontend
+npm install
 npm run dev
 ```
 
-You should see: `Local: http://localhost:5173`
+Open http://localhost:5173.
 
-#### ✅ Open in Browser:
+## 6. Generate a video
 
-👉 Go to **http://localhost:5173**
+1. Enter a topic.
+2. Select an avatar or upload an image (maximum 10 MB).
+3. Select Generate.
+4. The backend requests a script, creates voice audio, then runs SadTalker.
+5. Watch the resulting video when generation completes.
 
----
+## Troubleshooting
 
-## 🎬 How to Use the App
-
-1. **Enter a topic** (e.g., "Climate Change", "History of AI")
-2. **Choose an avatar** — Male or Female, or upload your own photo
-3. **Click Generate** 
-4. **Wait** — the app will:
-   - 🤖 Generate a script using AI
-   - 🎙️ Create a voiceover
-   - 🎬 Generate a lip-synced video
-5. **Watch your video!** 🎉
-
----
-
-## 🔧 Troubleshooting
-
-| Problem | Solution |
-|---------|----------|
-| `GEMINI_API_KEY` error | Check your API key in `backend/.env` |
-| Gemini quota exceeded | Add an `OPENROUTER_API_KEY` as fallback |
-| ElevenLabs error | App auto-falls back to Windows TTS |
-| SadTalker not found | Make sure the `venv` was created inside `backend/AI/SadTalker-main/SadTalker-main/` |
-| Video generation is slow | Normal! First run downloads models. GPU makes it faster. |
-| CUDA / GPU errors | Make sure CUDA Toolkit is installed, or use CPU-only PyTorch |
-| Port already in use | Change `PORT` in `backend/.env` or kill the process using that port |
-
----
-
-## 📁 Project Structure (Simplified)
-
-```
-Aipresenter/
-├── backend/                    ← Node.js Express server (port 5000)
-│   ├── .env                    ← YOUR API KEYS GO HERE
-│   ├── server.js               ← Main server
-│   ├── services/
-│   │   ├── geminiService.js    ← Script generation (Gemini/OpenRouter)
-│   │   ├── elevenLabsService.js← Voice generation (ElevenLabs/Windows TTS)
-│   │   └── sadTalkerService.js ← Video generation (SadTalker)
-│   └── AI/SadTalker-main/      ← SadTalker (Python AI for lip-sync)
-│
-├── frontend/                   ← React + Vite UI (port 5173)
-├── avatars/                    ← Default face images (male.jpg, female.jpg)
-├── results/                    ← Generated videos go here
-└── uploads/                    ← User-uploaded images
-```
-
----
-
-## 📌 Summary Cheat Sheet
-
-```
-1. Edit  backend/.env          → Add your API keys
-2. Run   pip install ...       → Set up SadTalker Python venv
-3. Run   npm install           → In both backend/ and frontend/
-4. Run   npm run dev           → In backend/ (Terminal 1)
-5. Run   npm run dev           → In frontend/ (Terminal 2)
-6. Open  http://localhost:5173 → Use the app!
-```
-
-**That's it! You're ready to go! 🎉**
+- **SadTalker not found:** Check that `SADTALKER_PATH` points to the directory containing `inference.py`.
+- **Gemini errors:** Check `GEMINI_API_KEY` and provider quota.
+- **OpenRouter fallback:** Set `OPENROUTER_API_KEY` if you want the optional fallback.
+- **ElevenLabs errors:** Check your API key and voice IDs. Without an ElevenLabs key, the current local fallback uses Windows Speech.
+- **CUDA errors:** Install a PyTorch build compatible with your installed driver, or test SadTalker in CPU mode.
+- **Port in use:** Change `PORT` in the backend `.env` and update the Vite proxy target in `frontend/vite.config.js` to match.
